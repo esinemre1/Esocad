@@ -11,6 +11,7 @@ const AdBanner: React.FC = () => {
                 adSize: BannerAdSize.BANNER,
                 position: BannerAdPosition.BOTTOM_CENTER,
                 margin: 0,
+                isTesting: true // Enable test mode for development
             });
         }).catch(err => console.error('AdMob init failed', err));
 
