@@ -1,0 +1,7 @@
+{
+  "name": "ESOCAD Surveying Assistant",
+  "description": "Haritacılar için kapsamlı koordinat hesaplama, alan ölçümü ve harita görselleştirme uygulaması.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
