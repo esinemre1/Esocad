@@ -27,34 +27,6 @@ ESOCAD, harita mühendisleri ve topoğraflar için geliştirilmiş, arazi çalı
     *   ITRF96 ve ED50 datum desteği.
     *   3° (TM) ve 6° (UTM) dilim genişliği seçenekleri.
     *   Otomatik veya manuel DOM (Dilim Orta Meridyeni) seçimi.
-*   **💰 AdMob Entegrasyonu:** Uygulama içi reklam desteği.
-
-## 🚀 Kurulum ve Çalıştırma
-
-Bu projeyi yerel ortamınızda çalıştırmak için aşağıdaki adımları izleyin:
-
-### Gereksinimler
-*   Node.js (v18 veya üzeri)
-*   npm
-
-### Adımlar
-
-1.  Projeyi klonlayın:
-    ```bash
-    git clone https://github.com/esinemre1/Esocad.git
-    cd Esocad
-    ```
-
-2.  Bağımlılıkları yükleyin:
-    ```bash
-    npm install
-    ```
-
-3.  Uygulamayı başlatın:
-    ```bash
-    npm run dev
-    ```
-    Tarayıcınızda `http://localhost:3000` (veya belirtilen port) adresine gidin.
 
 
 ## 🤝 İletişim
