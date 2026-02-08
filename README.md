@@ -56,28 +56,6 @@ Bu projeyi yerel ortamınızda çalıştırmak için aşağıdaki adımları izl
     ```
     Tarayıcınızda `http://localhost:3000` (veya belirtilen port) adresine gidin.
 
-## 📱 APK Oluşturma (Android)
-
-Bu proje [Capacitor](https://capacitorjs.com/) kullanılarak Android uygulamasına dönüştürülebilir.
-
-1.  Projeyi derleyin:
-    ```bash
-    npm run build
-    ```
-
-2.  Android platformunu senkronize edin:
-    ```bash
-    npx cap sync android
-    ```
-
-3.  Android Studio'da açın ve APK alın:
-    ```bash
-    npx cap open android
-    ```
-
-## 🛠️ GitHub Actions ile Otomatik APK
-
-Bu depoda GitHub Actions yapılandırılmıştır. `main` dalına yapılan her `push` işleminden sonra otomatik olarak APK dosyası oluşturulur ve "Actions" sekmesinden indirilebilir.
 
 ## 🤝 İletişim
 
