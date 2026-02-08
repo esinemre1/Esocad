@@ -23,9 +23,9 @@ const App: React.FC = () => {
   const [manualName, setManualName] = useState("");
   const [manualY, setManualY] = useState("");
   const [manualX, setManualX] = useState("");
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
   // const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobile menu replaced by BottomNav
-  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [projSettings, setProjSettings] = useState<ProjectionSettings>({
@@ -354,51 +354,104 @@ const App: React.FC = () => {
                 </div>
               </div>
               <div className="bg-white rounded-[2rem] shadow-xl border border-slate-200 overflow-hidden">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-900 text-white text-[10px] uppercase font-black tracking-widest">
-                    <tr>
-                      <th className="p-6">Seç</th>
-                      <th className="p-6">Nokta No</th>
-                      <th className="p-6">Y (Sağa)</th>
-                      <th className="p-6">X (Yukarı)</th>
-                      <th className="p-6">Enlem (WGS84)</th>
-                      <th className="p-6">Boylam (WGS84)</th>
-                      <th className="p-6 text-center">İşlem</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {filteredPoints.map(p => {
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-slate-900 text-white text-[10px] uppercase font-black tracking-widest">
+                      <tr>
+                        <th className="p-6">Seç</th>
+                        <th className="p-6">Nokta No</th>
+                        <th className="p-6">Y (Sağa)</th>
+                        <th className="p-6">X (Yukarı)</th>
+                        <th className="p-6">Enlem (WGS84)</th>
+                        <th className="p-6">Boylam (WGS84)</th>
+                        <th className="p-6 text-center">İşlem</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {filteredPoints.map(p => {
+                        const proj = wgs84ToProjected(p.lat, p.lng, projSettings.width, projSettings.centralMeridian, projSettings.datum);
+                        const isSelected = selectedPointIds.includes(p.id);
+                        return (
+                          <tr key={p.id} className={`transition-colors ${isSelected ? 'bg-emerald-50/50' : 'hover:bg-blue-50/30'}`}>
+                            <td className="p-6">
+                              <button onClick={() => togglePointSelection(p.id)} className={`transition-colors ${isSelected ? 'text-emerald-600' : 'text-slate-300 hover:text-slate-400'}`}>
+                                {isSelected ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5" />}
+                              </button>
+                            </td>
+                            <td className="p-6 font-black text-slate-800 uppercase">{p.name}</td>
+                            <td className="p-6 font-mono font-black text-blue-600">{proj.east.toFixed(3)}</td>
+                            <td className="p-6 font-mono font-black text-emerald-600">{proj.north.toFixed(3)}</td>
+                            <td className="p-6 font-mono text-slate-400 text-xs">{p.lat.toFixed(8)}</td>
+                            <td className="p-6 font-mono text-slate-400 text-xs">{p.lng.toFixed(8)}</td>
+                            <td className="p-6">
+                              <div className="flex justify-center gap-2">
+                                <button onClick={() => startStakeout(p.id)} className="p-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 shadow-md transition-all active:scale-95" title="Aplikasyon Yap"><Target className="w-4 h-4" /></button>
+                                <button onClick={() => startEditing(p)} className="p-2.5 bg-orange-100 text-orange-600 rounded-xl hover:bg-orange-200 transition-all active:scale-95" title="Düzenle"><Pencil className="w-4 h-4" /></button>
+                                <button onClick={() => removePoint(p.id)} className="p-2.5 bg-slate-100 text-slate-500 rounded-xl hover:bg-red-50 hover:text-red-500 transition-all active:scale-95" title="Sil"><Trash2 className="w-4 h-4" /></button>
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                      {filteredPoints.length === 0 && (
+                        <tr><td colSpan={7} className="p-20 text-center text-slate-300 font-medium italic text-sm">
+                          {searchTerm ? 'Sonuç bulunamadı.' : 'Kayıtlı veri bulunmuyor. Harita modundan nokta ekleyin.'}
+                        </td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Card View */}
+                <div className="md:hidden space-y-4 p-4">
+                  {filteredPoints.length === 0 ? (
+                    <div className="p-10 text-center text-slate-400 font-medium italic text-sm bg-slate-50 rounded-3xl border border-slate-100">
+                      {searchTerm ? 'Sonuç bulunamadı.' : 'Kayıtlı veri bulunmuyor. Harita modundan nokta ekleyin.'}
+                    </div>
+                  ) : (
+                    filteredPoints.map(p => {
                       const proj = wgs84ToProjected(p.lat, p.lng, projSettings.width, projSettings.centralMeridian, projSettings.datum);
                       const isSelected = selectedPointIds.includes(p.id);
                       return (
-                        <tr key={p.id} className={`transition-colors ${isSelected ? 'bg-emerald-50/50' : 'hover:bg-blue-50/30'}`}>
-                          <td className="p-6">
-                            <button onClick={() => togglePointSelection(p.id)} className={`transition-colors ${isSelected ? 'text-emerald-600' : 'text-slate-300 hover:text-slate-400'}`}>
-                              {isSelected ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5" />}
-                            </button>
-                          </td>
-                          <td className="p-6 font-black text-slate-800 uppercase">{p.name}</td>
-                          <td className="p-6 font-mono font-black text-blue-600">{proj.east.toFixed(3)}</td>
-                          <td className="p-6 font-mono font-black text-emerald-600">{proj.north.toFixed(3)}</td>
-                          <td className="p-6 font-mono text-slate-400 text-xs">{p.lat.toFixed(8)}</td>
-                          <td className="p-6 font-mono text-slate-400 text-xs">{p.lng.toFixed(8)}</td>
-                          <td className="p-6">
-                            <div className="flex justify-center gap-2">
-                              <button onClick={() => startStakeout(p.id)} className="p-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 shadow-md transition-all active:scale-95" title="Aplikasyon Yap"><Target className="w-4 h-4" /></button>
-                              <button onClick={() => startEditing(p)} className="p-2.5 bg-orange-100 text-orange-600 rounded-xl hover:bg-orange-200 transition-all active:scale-95" title="Düzenle"><Pencil className="w-4 h-4" /></button>
-                              <button onClick={() => removePoint(p.id)} className="p-2.5 bg-slate-100 text-slate-500 rounded-xl hover:bg-red-50 hover:text-red-500 transition-all active:scale-95" title="Sil"><Trash2 className="w-4 h-4" /></button>
+                        <div key={p.id} className={`bg-white p-5 rounded-3xl shadow-sm border transaction-colors ${isSelected ? 'border-emerald-500 ring-4 ring-emerald-50' : 'border-slate-100'}`}>
+                          <div className="flex justify-between items-start mb-4">
+                            <div className="flex items-center gap-3">
+                              <button onClick={() => togglePointSelection(p.id)} className={`transition-colors ${isSelected ? 'text-emerald-600' : 'text-slate-300'}`}>
+                                {isSelected ? <CheckSquare className="w-6 h-6" /> : <Square className="w-6 h-6" />}
+                              </button>
+                              <div>
+                                <h3 className="font-black text-slate-800 text-lg uppercase">{p.name}</h3>
+                                <div className="text-[10px] font-bold text-slate-400">ID: {p.id.substring(0, 6)}</div>
+                              </div>
                             </div>
-                          </td>
-                        </tr>
+                            <div className="flex gap-1">
+                              <button onClick={() => startStakeout(p.id)} className="p-2.5 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 active:scale-95"><Target className="w-5 h-5" /></button>
+                              <button onClick={() => startEditing(p)} className="p-2.5 bg-orange-50 text-orange-500 rounded-xl hover:bg-orange-100 active:scale-95"><Pencil className="w-5 h-5" /></button>
+                              <button onClick={() => removePoint(p.id)} className="p-2.5 bg-red-50 text-red-500 rounded-xl hover:bg-red-100 active:scale-95"><Trash2 className="w-5 h-5" /></button>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-3 mb-4">
+                            <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                              <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Y (Sağa)</div>
+                              <div className="font-mono font-black text-blue-600 text-sm">{proj.east.toFixed(3)}</div>
+                            </div>
+                            <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                              <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">X (Yukarı)</div>
+                              <div className="font-mono font-black text-emerald-600 text-sm">{proj.north.toFixed(3)}</div>
+                            </div>
+                          </div>
+
+                          <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 bg-slate-50/50 p-2 rounded-xl">
+                            <span>Lat: {p.lat.toFixed(7)}</span>
+                            <span>Lng: {p.lng.toFixed(7)}</span>
+                          </div>
+                        </div>
                       )
-                    })}
-                    {filteredPoints.length === 0 && (
-                      <tr><td colSpan={7} className="p-20 text-center text-slate-300 font-medium italic text-sm">
-                        {searchTerm ? 'Sonuç bulunamadı.' : 'Kayıtlı veri bulunmuyor. Harita modundan nokta ekleyin.'}
-                      </td></tr>
-                    )}
-                  </tbody>
-                </table>
+                    })
+                  )}
+                </div>
               </div>
             </div>
           )}

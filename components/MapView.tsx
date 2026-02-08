@@ -48,7 +48,24 @@ const MapView: React.FC<MapViewProps> = ({ points, onAddPoint, onDeletePoint, on
   const [permissionStatus, setPermissionStatus] = useState<'prompt' | 'granted' | 'denied'>('prompt');
   const [showPermissionModal, setShowPermissionModal] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
-  const [isToolbarOpen, setIsToolbarOpen] = useState(true);
+  const [isToolbarOpen, setIsToolbarOpen] = useState(false);
+  const [deviceHeading, setDeviceHeading] = useState(0);
+
+  useEffect(() => {
+    const handleOrientation = (event: DeviceOrientationEvent) => {
+      let heading = event.alpha || 0;
+      if ((event as any).webkitCompassHeading) {
+        heading = (event as any).webkitCompassHeading;
+      }
+      setDeviceHeading(heading);
+    };
+    if (window.DeviceOrientationEvent) {
+      window.addEventListener('deviceorientation', handleOrientation);
+    }
+    return () => {
+      window.removeEventListener('deviceorientation', handleOrientation);
+    };
+  }, []);
 
   const layers = {
     osm: { url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', attribution: '&copy; OSM', label: 'Sokak' },
@@ -375,29 +392,41 @@ const MapView: React.FC<MapViewProps> = ({ points, onAddPoint, onDeletePoint, on
               </button>
             </div>
 
+            {/* Pusula Görünümü */}
             <div className="flex items-center gap-6">
               <div className="relative w-32 h-32 flex-shrink-0 flex items-center justify-center">
-                <div className="absolute inset-0 rounded-full border-[6px] border-white/5"></div>
+                {/* Dış Çember - Hedefe 2m kala yeşil yanar */}
+                <div className={`absolute inset-0 rounded-full border-[6px] transition-colors duration-500 ${stData.dist < 2 ? 'border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.5)]' : 'border-white/5'}`}></div>
                 <div className="absolute inset-2 rounded-full border-[2px] border-dashed border-white/10 animate-[spin_20s_linear_infinite]"></div>
+
+                {/* Dönen Ok */}
                 <div
-                  className="relative w-full h-full transition-transform duration-500 ease-out"
-                  style={{ transform: `rotate(${stData.azim - 90}deg)` }}
+                  className="relative w-full h-full transition-transform duration-300 ease-out"
+                  style={{
+                    // stData.azim (Coğrafi Kuzey'e göre açı) - deviceHeading (Cihazın Kuzey'e göre açısı)
+                    // Böylece ok her zaman hedefe kilitlenir.
+                    transform: `rotate(${stData.azim - deviceHeading}deg)`
+                  }}
                 >
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 flex flex-col items-center">
-                    <div className="w-0 h-0 border-l-[14px] border-l-transparent border-r-[14px] border-r-transparent border-bottom-[28px] border-bottom-blue-500 drop-shadow-[0_0_10px_rgba(59,130,246,0.6)]"></div>
-                    <div className="w-4 h-16 bg-gradient-to-b from-blue-500 to-transparent rounded-full -mt-1 opacity-50"></div>
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 flex flex-col items-center pt-2">
+                    {/* Ok Başı */}
+                    <div className={`w-0 h-0 border-l-[16px] border-l-transparent border-r-[16px] border-r-transparent border-bottom-[32px] drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] transition-colors duration-300 ${stData.dist < 2 ? 'border-bottom-emerald-500' : 'border-bottom-blue-500'}`}></div>
+                    {/* Ok Gövdesi */}
+                    <div className={`w-3 h-12 rounded-full -mt-1 opacity-80 transition-colors duration-300 ${stData.dist < 2 ? 'bg-gradient-to-b from-emerald-500 to-transparent' : 'bg-gradient-to-b from-blue-500 to-transparent'}`}></div>
                   </div>
                 </div>
+
+                {/* Merkez Nokta */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-3 h-3 bg-white rounded-full shadow-lg"></div>
+                  <div className={`w-3 h-3 rounded-full shadow-lg transition-colors ${stData.dist < 2 ? 'bg-emerald-200' : 'bg-white'}`}></div>
                 </div>
               </div>
 
               <div className="flex-1 flex flex-col justify-center gap-4">
-                <div className="bg-white/5 p-4 rounded-[1.5rem] border border-white/5">
+                <div className={`p-4 rounded-[1.5rem] border transition-all duration-300 ${stData.dist < 2 ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-white/5 border-white/5'}`}>
                   <span className="text-[10px] font-black text-slate-500 uppercase block mb-1">MESAFE</span>
                   <div className="flex items-baseline gap-1">
-                    <span className={`text-3xl font-mono font-black ${stData.dist < 1 ? 'text-emerald-400 animate-pulse' : 'text-blue-400'}`}>
+                    <span className={`text-3xl font-mono font-black transition-colors ${stData.dist < 2 ? 'text-emerald-400' : 'text-blue-400'}`}>
                       {stData.dist.toFixed(2)}
                     </span>
                     <span className="text-xs font-bold text-slate-400">m</span>
@@ -557,17 +586,15 @@ const MapView: React.FC<MapViewProps> = ({ points, onAddPoint, onDeletePoint, on
       )}
 
       {/* CANLI KONUM PANELİ */}
-      <div className="absolute bottom-6 left-6 z-10 flex flex-col gap-3 pointer-events-none">
+      {/* CANLI KONUM PANELİ (Minimal) */}
+      <div className="absolute bottom-6 left-4 z-10 flex flex-col gap-2 pointer-events-none">
         {projUser && (
-          <div className="pointer-events-auto bg-slate-900/90 backdrop-blur-xl px-5 py-3 rounded-full border border-white/20 shadow-2xl flex items-center gap-6 text-white animate-in slide-in-from-left-4">
-            <div className="flex items-center gap-2.5 pr-5 border-r border-white/20">
-              <div className={`w-2 h-2 rounded-full ${userLocation?.accuracy && userLocation.accuracy < 5 ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-orange-500 animate-pulse'} `} />
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{projSettings.datum}</span>
-            </div>
-            <div className="flex gap-6 font-mono text-xs font-black">
-              <div className="flex gap-2"><span className="text-slate-500">Y:</span>{projUser.east.toFixed(3)}</div>
-              <div className="flex gap-2"><span className="text-slate-500">X:</span>{projUser.north.toFixed(3)}</div>
-              {userLocation?.alt && <div className="flex gap-2 text-blue-400"><span className="text-slate-500">Z:</span>{userLocation.alt.toFixed(2)}</div>}
+          <div className="pointer-events-auto bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 shadow-lg flex items-center gap-3 text-white animate-in slide-in-from-left-2">
+            <div className={`w-1.5 h-1.5 rounded-full ${userLocation?.accuracy && userLocation.accuracy < 5 ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-orange-500 animate-pulse'} `} />
+            <div className="flex gap-3 font-mono text-[10px] font-bold opacity-90">
+              <div className="flex gap-1"><span className="text-slate-500">Y</span>{projUser.east.toFixed(2)}</div>
+              <div className="flex gap-1"><span className="text-slate-500">X</span>{projUser.north.toFixed(2)}</div>
+              {userLocation?.alt && <div className="flex gap-1 text-blue-400"><span className="text-slate-500">Z</span>{userLocation.alt.toFixed(1)}</div>}
             </div>
           </div>
         )}
