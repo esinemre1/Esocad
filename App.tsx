@@ -150,7 +150,7 @@ const App: React.FC = () => {
         <Sidebar currentMode={currentMode} onModeChange={setCurrentMode} isExpanded={isSidebarExpanded} setIsExpanded={setIsSidebarExpanded} isMobileOpen={false} setIsMobileOpen={() => { }} />
       </div>
 
-      <main className="flex-1 flex flex-col relative overflow-hidden pb-16 lg:pb-0">
+      <main className="flex-1 flex flex-col relative overflow-hidden pb-[120px] lg:pb-0">
         {/* Export Options Popover */}
         {showExportOptions && (
           <div className="absolute top-16 right-6 z-[100] w-48 bg-white rounded-2xl shadow-2xl border border-slate-100 p-2 animate-in slide-in-from-top-2">

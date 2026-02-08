@@ -17,7 +17,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ currentMode, onModeChange }) => {
     ];
 
     return (
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-slate-200 flex justify-between items-center px-6 pb-safe z-[500] shadow-[0_-5px_15px_-5px_rgba(0,0,0,0.1)]">
+        <nav className="lg:hidden fixed bottom-[50px] left-0 right-0 h-16 bg-white border-t border-slate-200 flex justify-between items-center px-6 pb-safe z-[500] shadow-[0_-5px_15px_-5px_rgba(0,0,0,0.1)]">
             {menuItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentMode === item.id;
